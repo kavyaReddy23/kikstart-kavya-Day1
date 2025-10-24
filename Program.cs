@@ -1,15 +1,29 @@
 ﻿// File: Program.cs
 using System;
 using System.Globalization;
+using System.Linq; // Intentionally unused to provoke a "remove unused using" suggestion
+
+#nullable enable
+
+/// <summary>
+/// Simple console calculator. Intentionally keeps I/O mixed with logic to invite refactor suggestions.
+/// TODO: Consider extracting a CalculatorService and an IConsole abstraction for testability.
+/// </summary>
 class Program
 {
+    // Intentional "magic strings" to encourage suggestions to centralize prompts
+    private const string AppTitle = "CalculatorApp (.NET)";
+    private const string AppHeader = "=== CalculatorApp ===";
+    private const string AppDesc = "Perform Add, Subtract, Multiply, Divide with input validation.";
+
     static void Main()
     {
-        Console.Title = "CalculatorApp (.NET)";
-        Console.WriteLine("=== CalculatorApp ===");
-        Console.WriteLine("Perform Add, Subtract, Multiply, Divide with input validation.");
+        Console.Title = AppTitle;
+        Console.WriteLine(AppHeader);
+        Console.WriteLine(AppDesc);
         Console.WriteLine();
 
+        // NOTE: Keeping this loop and menu logic here to invite "separate concerns" feedback
         while (true)
         {
             ShowMenu();
@@ -17,7 +31,8 @@ class Program
             Console.Write("Choose an option (1-4) or X to exit: ");
             string? choice = Console.ReadLine()?.Trim().ToLowerInvariant();
 
-            if (choice is "x" or "q" or "exit") break;
+            if (choice is "x" or "q" or "exit")
+                break;
 
             var op = ParseOperation(choice);
             if (op == Operation.Invalid)
@@ -50,10 +65,13 @@ class Program
             {
                 PrintWarn("Number too large or too small to handle. Try smaller magnitudes.");
             }
+            // Intentionally leaving out a broad catch to encourage guidance on exception scopes
 
             Console.WriteLine("Press Enter to continue, or type X to exit.");
             string? cont = Console.ReadLine()?.Trim().ToLowerInvariant();
-            if (cont is "x" or "q" or "exit") break;
+            if (cont is "x" or "q" or "exit")
+                break;
+
             Console.WriteLine();
         }
 
@@ -62,6 +80,9 @@ class Program
 
     // ---- Helpers ----
 
+    /// <summary>
+    /// Supported operations for the calculator.
+    /// </summary>
     enum Operation { Invalid = 0, Add, Subtract, Multiply, Divide }
 
     static void ShowMenu()
@@ -75,8 +96,12 @@ class Program
         Console.WriteLine();
     }
 
+    /// <summary>
+    /// Parses a user input string into an Operation.
+    /// </summary>
     static Operation ParseOperation(string? s)
     {
+        // Intentionally tolerant parser; reviewers may suggest using enums or mapping dictionary
         return s switch
         {
             "1" or "+" or "add" => Operation.Add,
@@ -112,13 +137,17 @@ class Program
             if (TryParseDecimalFlexible(input, out decimal value))
                 return value;
 
+            // Intentionally reusing literal string to provoke "extract constants" feedback
             PrintWarn("Invalid number. Please enter a valid numeric value (e.g., 12, -3.5).");
         }
     }
 
+    /// <summary>
+    /// Tries to parse a decimal using current culture, falling back to invariant.
+    /// </summary>
     static bool TryParseDecimalFlexible(string? input, out decimal value)
     {
-        // Accept both current culture and invariant (so '.' works even if culture uses ',')
+        // Reviewers might suggest Trim/Span usage or TryParse with styles consolidated
         if (decimal.TryParse(input, NumberStyles.Float, CultureInfo.CurrentCulture, out value))
             return true;
 
@@ -135,4 +164,3 @@ class Program
         Console.ForegroundColor = prevColor;
     }
 }
-
